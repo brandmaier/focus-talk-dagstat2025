@@ -7,7 +7,7 @@ date: '`r Sys.Date()`'
 
 output:
   xaringan::moon_reader:
-    chakra: libs/remark-latest.min.js
+#    chakra: libs/remark-latest.min.js
     css: xaringan-themer.css
     nature:
       beforeInit: "macros.js"
@@ -83,7 +83,7 @@ class: center middle
 
 class: inverse center middle
 
-# SEM + Decision Trees + Random Forests + Variable Importance + BORUTA
+# SEM + Decision Trees + Random Forests + Variable Importance + Focus Parameters
 
 
 Roadmap
@@ -97,12 +97,57 @@ Roadmap
 knitr::include_graphics("img/SEM-measurement-structure.png")
 ```
 ---
+# SEM
+More formally, let $\mathbf{x}$ be a $p$-dimensional vector of observed variables, which is a function of $m$ latent variables:
+
+$$\mathbf{x} = \mathbf{\tau} + \mathbf{\Lambda\xi}+\mathbf{\epsilon} $$
+- $\mathbf{\tau}$ are the $p$ intercepts
+- $\mathbf{\Lambda}$ is the $p \times m$ factor loading matrix
+- $\mathbf{\xi}$ are the $m$ latent factor scores
+---
+# SEM
+
+With $\Theta$ being the covariance of the latent factors and $\Psi$ a covariance matrix of the residuals, we obtain a model-implied covariance matrix:
+
+$$\mathbf{ \Sigma = \Lambda \Theta \Lambda^T + \Psi }$$
+And likelihood fit function (based on multivariate normal assumption):
+
+$$-2LL = ln|\mathbf{\Sigma}|+tr\left(\mathbf{\Sigma^{-1} S} \right)-ln\left| \mathbf{S} \right| - \mathbf{p} $$
+
+(for multiple independent groups, the log-likelihoods sum up)
+
+---
+# Testing for group differences
+
+Old-school likelihood ratio test, given a parametric model $M$ with parameters $\theta$ and data $X$, which is exhaustively split into $X_1$ and $X_2$ with corresponding maximum likelihood estimates $\theta_1$ and $\theta_2$:
+
+$$LR =-2LL \left( X_{1}|M(\theta_1))-2LL(X_{2}|M(\theta_2)) + 2LL(X|\theta) \right)$$
+which is asymptotically $\chi^2$-distributed if H0 is true (i.e., no group differences)
+---
+<img src="unsplash/matthew-henry-2Ts5HnA67k8-unsplash.jpg">
+```{r}
+
+"unsplash/alan-king-KZv7w34tluA-unsplash.jpg"
+
+```
+---
+# Score-based Tests
+
+- Likelihood ratio tests are computationally expensive and naive LR test suffer from multiple testing issues
+- Let's use score tests (proposed for general model-based partitioning by @zeileis2008model)
+
+---
+# Score-based Tests
+<img src="img/csp.png">
+
+
+---
 class: center
 # Commercial Break: Ωnyx
 
-![:scale 60%](img/onyx-lavaan-screenshot2.png)
+![](img/onyx-lavaan-screenshot2.png)
 
-https://onyx-sem.com/
+https://onyx-sem.com/ and ![https://github.com/brandmaier/onyx](https://github.com/brandmaier/onyx)
 ---
 # Theory-driven modeling
 <img src="img/tg1.png">
@@ -134,7 +179,7 @@ class: inverse, center, middle
 ]
 
 .pull-right[
-![:scale 80%](img/lgcm-predictions.png)
+![](img/lgcm-predictions.png)
 ]
 
 <small>`r Citet(bib, "brandmaier2013structural")`</small>
@@ -145,7 +190,7 @@ class: inverse, center, middle
 
 <center>
 
-![:scale 60%](img/spagetthi-all-large.png)
+![](img/spagetthi-all-large.png)
 
 <small>N=204 children, McArdle & Epstein, 1987</small>
 
@@ -156,21 +201,47 @@ class: inverse, center, middle
 
 <center>
 
-![:scale 70%](img/tree-split-moedu.png)
+![](img/tree-split-moedu.png)
 
 ---
 
 # A Simple Example: WISC
 
 <center>
-![:scale 70%](img/tree-split-sex-large.png)
+![](img/tree-split-sex-large.png)
 
 ---
 
 # A Simple Example: WISC
 
 <center>
-![:scale 55%](img/tree-split-moedu-faedu-large.png)
+![](img/tree-split-moedu-faedu-large.png)
+---
+
+# What do splits represent?
+
+Splits may represent any combination of:
+- Differences in mean within-person changes
+- Differences in interindividual differences in within-person change
+- Differences in the mean intercept
+- Differences in interindividual differences in the intercept
+- Differences in the correlation of intercept and within-person change
+- Differences in reliability or growth curve misfit (differences in measurement error as part of the model residual variance)
+---
+
+# Focus parameters
+
+Instead of:
+$$LR =-2LL \left( X_{1}|M(\theta_1))-2LL(X_{2}|M(\theta_2)) + 2LL(X|\theta) \right)$$
+we estimate
+$$LR =-2LL \left( X_{1}|M(\theta_1))-2LL(X_{2}|M(\theta_2)) -2LL \left( X_{1}|M(\theta'_1))-2LL(X_{2}|M(\theta'_2)) \right)$$
+with focus parameters constrained to be identical across groups for $\theta'_1$ and $\theta'_2$
+
+this $LR$ now corresponds to the misfit incurred by constraining only the focus parameters to identity
+
+-> more expensive because we need to obtain maximum likelihood estimates for every possible split:
+
+$$argmax_{\theta'_1, \theta'_2}  -2LL \left( X_{1}|M(\theta'_1))-2LL(X_{2}|M(\theta'_2)) \right)$$
 ---
 
 # Theory-guided exploration
@@ -194,164 +265,153 @@ class: inverse, center, middle
 
 ]
 
+---
+class: center middle
+# Some examples
 
+---
+# Univariate predictions
+
+Let's simulate some *yawn* Gaussian data and two predictors `pred_mean` and `pred_var` that perfectly predict differences in location and scale. 
+```{r out.height="20%"}
+knitr::include_graphics("img/simulated_four_univ.png")
+```
+
+---
+
+# Journal Pricing
+
+- The model to be partitioned is a linear regression for the number of library subscriptions by price per citation in log-log specification (i.e., with $k = 2$ coefficients) @zeileis2008model
+
+- Predictors: the raw price and number of citations, the age of the journal, number of characters and a factor indicating whether the journal is associated with a society or not.
+
+```{r echo=TRUE, eval=FALSE}
+library(partykit)
+j_tree <- partykit::lmtree(logsubs ~ lpc | price + citations +
+                   + age + chars + society, data = Journals)
+```
+---
+# Journal Pricing
+```{r echo=FALSE, eval=TRUE}
+data("Journals", package = "AER")
+Journals <- transform(Journals,
+                      age = 2000 - foundingyear,
+                      chars = charpp * pages,
+                      lpc = log(price/citations),
+                      logsubs = log(subs))
+
+library(partykit)
+
+j_tree <- lmtree(logsubs ~ lpc | price + citations +
+                   + age + chars + society, data = Journals, minsize = 10)
+
+#j_tree <- lmtree(logsubs ~ lpc | citations, data = Journals, minsize = 10, verbose = TRUE)
+plot(j_tree)
+``` 
+---
+# SEM Tree
 
 ---
 class: inverse, center, middle
-# BORUTA
 
-<center><img src="img-downloaded/800px-Boruta.jpg" style="height:400px" /></center>
-
-A spirit or devil from slavic mythology, <small>image from Wikipedia/Public Domain</small>
-
----
-class: inverse middle center
-# Shadow features
-
-Create random copies of all predictors (_shadow features_)
- features; keep predictors outperforming shadow features `r  Citep(bib, "boruta")`
-
----
-
-# Algorithm
-
-- Create a copy of the original data set
-- Create shadow features by permutation of all non-rejected features (remove association of shadow features with outcome(s) )
-- Run a SEM forest and variable importance
-- A feature is considered relevant if it performs better than the best shadow feature (**'hit'**)
-- Run a statistical test for each original predictor (H0: predictor performs like max of shadow features)
-- If significant, tag predictor as **'confirmed'** or **'rejected'**, otherwise leave as **'tentative'**
-- repeat until no tentative features (or too may iterations)
-
-
----
-# Us combining SEM forests and BORUTA
-
-<center>
-
-![:scale 40%](img/madscientist2.png)
-
-(according to ChatGPT)
----
-class: inverse center middle
-
-# A minimal proof of concept
-
-
----
-# Setup
-
-- Randomly draw ordinal $x1$ to $x6$ from ${0,1,2}$
-- Generate a dataset of $N=1000$
-- Compute outcome according to: 
-$$y = 2\cdot x1+1\cdot x2+0.1\cdot x3+\mathcal{N}(0,0.01)$$
-- Run BORUTA with 100 trees per forest for 11 runs
-- Outcome model with only mean of $y$ (basically like CART)
----
-# A simple SEM tree
-```{r}
-tree_ex1 <- readRDS("results/sim2/tree.rds")
-plot(semtree::prune(tree_ex1,2))
-```
-
----
-# Variable importance
-```{r}
-boruta_results <- readRDS("results/sim2/boruta_result.rds")
-barplot(simplify2array(boruta_results$impHistory[1,1:6]))
-```
----
-
-# BORUTA results
 
 ```{r}
-boruta_results <- readRDS("results/sim2/boruta_result.rds")
-plot(boruta_results)
-```
----
-class: center middle inverse
-
-# Example: Depression Anxiety Stress Scales (DASS)
-
----
-
-# Example: DASS
-
-- open data from openpsychometrics.org
-- data was collected with an online version of the Depression Anxiety Stress Scales (DASS) (http://www2.psy.unsw.edu.au/dass/)
-- 2df outcome model with mean and variance of the DASS sum score (42 items)
-- predictors: age, education, gender, handedness, urban, family size, screen size, voted
-- $N=38,385$ complete cases (after some data cleaning)
-
----
-# SEM Tree with DASS
-
-```{r}
-tree <- readRDS("results/ex3/tree.rds")
-plot(tree)
-```
----
-# SEM Tree with DASS (zoom in)
-
-```{r out.height="80%", out.width="80%"}
-tree <- readRDS("results/ex3/tree.rds")
-plot(semtree::prune(tree,2))
-```
----
-
-# Example: DASS
-```{r}
-boruta_results<-readRDS("results/ex3/boruta_results_run2.rds")
-plot(boruta_results)
+knitr::include_graphics("img/contourplot2d-simulation-4colors.png")
 ```
 
 ---
 
+# Reproducibility + Exploratory Methods
+---
 
-# Max-Operator
+# Why should we work reproducibly?
 
-`max()`-operator on the shadow importance is problematic:
+Many good reasons like: 
 
-- the more shadow features, the larger the expected value of the maximum over all shadow features
+- Transparency
+- Trustworthiness
+- Replication
+- Cumulative science
 
-- the threshold of relevance changes depending on the number of initial features
-
-- as features get rejected, the threshold tends gets lower
-
-Possible fix: quantile instead of max?
+> Transparency and accessibility are central scientific values, and open, reproducible projects will increase the efficiency and veracity of knowledge accumulation `r Citep(bib, "bar2012reporting")`.
 
 ---
 
-# Why you should not use it
+## Your closest collaborator is you six months ago, but you don’t reply to emails.
 
-- BORUTA is a naive wrapper algorithm and computationally quite costly 
+.footnote[From Karl Broman's lecture on reproducibility, paraphrasing Mark Holden]
+
+---
+
+## Forensics
+
+If an analysis is repeated later in time and results do not align with what was published, it could be due to:
+
+- changes in the core functions of dependent packages (e.g., bugfixes)
+- changes in defaults of dependent packages (e.g., default test statistic for splits, default stopping criteria, default bucket size)
+- changes in the data used (e.g., preprocessing, outlier removal)
+- changes in the R script used (e.g., multiple versions were created during development and it's unclear, which one was used ultimately)
+
+---
+
+# Sources of Failure to Reproduce Results
+
+.pull-right[ ![](img/markus-spiske-yUTgdQkbd7c-unsplash.jpg) ]
+
+1. **Multiple versions of scripts/data** (e.g., dataset has changed over, i.e., was further cleaned or extended)
+
 --
 
-- As always: type-I and type-II errors depend on sample size, effect size, multiple testing adjustments
+2. **Multiple scripts** in a pipeline; unclear which scripts should be executed in which order
+
 --
 
-- Difficult implications of "confirmation" and "rejection"
+3. **Copy&paste errors** (e.g., inconsistency between reported result and reproduced result)
+
 --
 
-- Categorization hardly really helpful for theory advancement
---
+4. Broken **software dependencies** (e.g., analysis broken after update, missing package, just comes out differently on a different computer )
 
-- No short cut to a new theory
+
+---
+
+# Four Elements of Reproducibility
+
+.center[
+
+```{r, echo=FALSE, out.width='60%'}
+knitr::include_graphics("img/nutshell.png")
+```
+
+]
+
+.footnote[from Peikert and Brandmaier (2020)]
+---
+class: center, middle
+
+# reproducibleRchunks
+
+
+![](img/reproducibleRchunks/schema-json-fingerprints.png) 
+
+(now on CRAN: reproducibleRchunks)
 
 ---
 # Thank You
 
-Slides: https://github.com/brandmaier/boruta_presentation_dgps
+- Slides: https://github.com/brandmaier/focus-talk-dagstat2025
+
+- Packages on CRAN: `semtree`, `repro`, and `reproducibleRchunks`
 
 .pull-left[
-Contact: andreas.brandmaier@medicalschool-berlin.de or @brandmaier on X or .strong[@brandmaier.bsky.social] on Bluesky or .strong[https://www.brandmaier.de]
+Contact: andreas.brandmaier@medicalschool-berlin.de or .strong[@brandmaier.bsky.social] on Bluesky or .strong[https://www.brandmaier.de]
 
 ]
 
 .pull-right[
 
 ```{r, echo=FALSE}
-link <- "https://github.com/brandmaier/boruta_presentation_dgps"
+link <- "https://github.com/brandmaier/focus-talk-dagstat2025"
 ```
 
 ```{r, echo=FALSE, out.width = "30%", out.extra='style="float:center"'}
