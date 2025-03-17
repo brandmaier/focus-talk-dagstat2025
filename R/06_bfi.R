@@ -110,8 +110,9 @@ frst <- semforest(model=run2, bfisub,
                 control = semforest_score_control(num.trees=100),
                 constraints=list(focus.parameters=c("f2","f3","f4","f5")))
 
-vim <- varimp(frst, method="permutationFocus")
 
+
+
+#vim <- varimp(frst, method="permutationFocus")
 plot(vim)
-
 saveRDS(object=vim, file="data/06_bfi_vim.rds")

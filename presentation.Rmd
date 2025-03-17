@@ -152,7 +152,7 @@ https://onyx-sem.com/ and ![https://github.com/brandmaier/onyx](https://github.c
 class: inverse, center, middle
 # SEM Trees
 
-(an instance of model-based recursive partitioning `r Citet(bib, c("@zeileis2008model"," @brandmaier2013structural"))` )
+(an instance of model-based recursive partitioning `r Citet(bib, c("zeileis2008model"," brandmaier2013structural"))` )
 ---
 
 
@@ -304,11 +304,12 @@ Let's simulate some Gaussian data and two predictors `pred_mean` and `pred_var` 
 ![:scale 20%](img/simulated_four_univ.png)
 
 ```{r}
-vim2<-readRDS("data/03_vim2.rds")
-vimc<-readRDS("data/03_vimc.rds")
+#vim2<-readRDS("data/03_vim2.rds")
+#vimc<-readRDS("data/03_vimc.rds")
 ```
 ---
 # Inspect first tree
+Tree #1 from a forest without focus parameters
 ```{r}
 forest <- readRDS("data/04_sf.rds")
 
@@ -318,7 +319,7 @@ plot(forest$forest[[1]])
 # Inspect second tree
 ```{r}
 
-plot(forest$forest[[2]])
+plot(prune(forest$forest[[3]],2))
 ```
 ---
 # Problem
@@ -379,17 +380,36 @@ j_tree <- lmtree(logsubs ~ lpc | price + citations +
 #j_tree <- lmtree(logsubs ~ lpc | citations, data = Journals, minsize = 10, verbose = TRUE)
 plot(j_tree)
 ``` 
----
-# SEM Tree
 
+(Subscriptions per price-by-citation in log-scale)
+---
+# Regression SEM Tree
+
+<TODO IMAGE>
+
+---
+
+#
 ```{r}
-#knitr::include_graphics("")
+tree<-readRDS("data/02_tree_foc.rds")
+plot(tree)
 ```
-
+Identical result: somewhat shallower slope for older journals
 ---
-class: inverse, center, middle
+# Tree w/o focus parameter
 
+.pull-left[
+- If we run the tree without focus parameter, all parameters become potentially relevant
+- Splits could be because of differences in intercept, differences in residual variance, or differences in predictor variance
+]
 
+.pull-right[
+```{r}
+tree<-readRDS("data/02_tree_unc.rds")
+plot(tree)
+```
+]
+---
 ```{r}
 knitr::include_graphics("img/contourplot2d-simulation-4colors.png")
 ```
@@ -425,7 +445,7 @@ doubt on theory in the behavioral sciences" `r Citet(bib, "horn1992practical")`
 - With focus parameters, specify a CFA
 - choose factor loadings as focus parameters
 
-![](img/06bfi-tree-loadings.png)
+![](img/06)
 
 ---
 class: inverse, center, middle

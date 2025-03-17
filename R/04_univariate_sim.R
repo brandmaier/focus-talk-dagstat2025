@@ -7,10 +7,14 @@ N <- 1000
 pred_mean <- sample(c(0,1),N,TRUE)
 pred_var <- sample(c(0,1),N,TRUE)
 
+noise1 <- sample(c(0,1),N,TRUE)
+noise2 <- sample(c(0,1),N,TRUE)
+noise3 <- sample(c(0,1),N,TRUE)
+
 y <- rnorm(N, mean=1*pred_mean, sd=1+pred_var)
 
 simdata <- data.frame(y,pred_mean=as.factor(pred_mean),pred_var=as.factor(pred_var))
-simdata <- data.frame(y,pred_mean, pred_var)
+simdata <- data.frame(y,pred_mean, pred_var, noise1, noise2, noise3)
 
 
 tree_partykit <- partykit::ctree(y~., simdata)

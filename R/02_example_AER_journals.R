@@ -61,3 +61,6 @@ plot(prune(tree.foc,1))
 
 plot(tree.unc)
 plot(tree.foc)
+
+saveRDS(tree.unc, file = "data/02_tree_unc.rds")
+saveRDS(tree.foc, file = "data/02_tree_foc.rds")
