@@ -1,7 +1,9 @@
 library(partykit)
 
+ntrees <- 10
+
 set.seed(2309538)
-N <- 10000
+N <- 1000
 pred_mean <- sample(c(0,1),N,TRUE)
 pred_var <- sample(c(0,1),N,TRUE)
 
@@ -18,7 +20,6 @@ library(ggplot2)
 ggplot(simdata, aes(x=y))+geom_histogram()+facet_wrap(~pred_mean+pred_var)
 
 
-ggsave("img/simulated_four_univ.png",plot = last_plot())
 
 #plot(tree)
 
@@ -71,21 +72,27 @@ plot(tree_semtree_f2)
 cf <- partykit::cforest(y~., simdata)
 vim_partykit <- partykit::varimp(cf)
 
-sf <- semforest(sem, simdata, control = semforest_score_control(num.trees=100))
+sf <- semforest(sem, simdata, control = semforest_score_control(num.trees=ntrees))
 vim_semtree <- semtree::varimp(sf)
 
-sf_f1 <- semforest(sem, simdata, control = semforest_score_control(num.trees=100),
+sf_f1 <- semforest(sem, simdata, control = semforest_score_control(num.trees=ntrees),
                 constraints=semtree.constraints(focus.parameters=c("mean_y")))
 vim_semtree_f1 <- semtree::varimp(sf_f1,method = "permutationFocus")
 
-sf_f2 <- semforest(sem, simdata, control = semforest_score_control(num.trees=100),
+sf_f2 <- semforest(sem, simdata, control = semforest_score_control(num.trees=ntrees),
                    constraints=semtree.constraints(focus.parameters=c("var_y")))
 vim_semtree_f2 <- semtree::varimp(sf_f2,method = "permutationFocus")
 
 
-saveRDS( tree_semtree_f1, file="data/univsim_semtree_f1.rds" )
-saveRDS( tree_semtree_f2, file="data/univsim_semtree_f2.rds" )
-saveRDS( tree_semtree_f3, file="data/univsim_semtree_f3.rds" )
-saveRDS(vim_partykit, file="data/univsim_vim_partykit.rds" )
-saveRDS( vim_semtree_f1, file="data/univsim_vim_semtree_f1.rds" )
-saveRDS( vim_semtree_f2, file="data/univsim_vim_semtree_f2.rds" )
+saveRDS( tree_semtree_f1, file="data/04_univsim_semtree_f1.rds" )
+saveRDS( tree_semtree_f2, file="data/04_univsim_semtree_f2.rds" )
+#saveRDS( tree_semtree_f3, file="data/04_univsim_semtree_f3.rds" )
+saveRDS(vim_partykit, file="data/04_univsim_vim_partykit.rds" )
+saveRDS( vim_semtree, file="data/04_univsim_vim_semtree.rds" )
+saveRDS( vim_semtree_f1, file="data/04_univsim_vim_semtree_f1.rds" )
+saveRDS( vim_semtree_f2, file="data/04_univsim_vim_semtree_f2.rds" )
+saveRDS ( sf, file="data/04_sf.rds")
+saveRDS ( sf_f1, file="data/04_sf_f1.rds")
+saveRDS ( sf_f2, file="data/04_sf_f2.rds")
+
+ggsave("img/04_simulated_four_univ.png",plot = last_plot())
