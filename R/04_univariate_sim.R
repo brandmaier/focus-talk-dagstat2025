@@ -1,6 +1,8 @@
 library(partykit)
+library(tictoc)
 
-ntrees <- 10
+plan(multisession, workers = 7)
+ntrees <- 100
 
 set.seed(2309538)
 N <- 1000
@@ -73,20 +75,27 @@ tree_semtree_f2 <- semtree(sem, simdata, control=semtree.control(method="score")
 plot(tree_semtree_f1)
 plot(tree_semtree_f2)
 
+tic()
 cf <- partykit::cforest(y~., simdata)
 vim_partykit <- partykit::varimp(cf)
+toc()
 
+tic()
 sf <- semforest(sem, simdata, control = semforest_score_control(num.trees=ntrees))
 vim_semtree <- semtree::varimp(sf)
+toc()
 
+tic()
 sf_f1 <- semforest(sem, simdata, control = semforest_score_control(num.trees=ntrees),
                 constraints=semtree.constraints(focus.parameters=c("mean_y")))
 vim_semtree_f1 <- semtree::varimp(sf_f1,method = "permutationFocus")
+toc()
 
+tic()
 sf_f2 <- semforest(sem, simdata, control = semforest_score_control(num.trees=ntrees),
                    constraints=semtree.constraints(focus.parameters=c("var_y")))
 vim_semtree_f2 <- semtree::varimp(sf_f2,method = "permutationFocus")
-
+toc()
 
 saveRDS( tree_semtree_f1, file="data/04_univsim_semtree_f1.rds" )
 saveRDS( tree_semtree_f2, file="data/04_univsim_semtree_f2.rds" )

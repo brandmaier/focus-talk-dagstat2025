@@ -129,7 +129,7 @@ class: center
 
 ![:scale 60%](img/onyx-lavaan-screenshot2.png)
 
-https://onyx-sem.com/ and ![https://github.com/brandmaier/onyx](https://github.com/brandmaier/onyx)
+https://onyx-sem.com/ and [https://github.com/brandmaier/onyx](https://github.com/brandmaier/onyx)
 ---
 # Theory-driven modeling
 <img src="img/tg1.png">
@@ -153,9 +153,8 @@ class: inverse, center, middle
 # SEM Trees
 
 (an instance of model-based recursive partitioning `r Citet(bib, c("zeileis2008model"," brandmaier2013structural"))` )
+
 ---
-
-
 # Theory-guided exploration
 <img src="img/tg3.png">
 
@@ -212,21 +211,36 @@ class: inverse, center, middle
 # What do splits represent?
 
 Splits may represent any combination of:
-- Differences in mean within-person changes
-- Differences in interindividual differences in within-person change
-- Differences in the mean intercept
-- Differences in interindividual differences in the intercept
-- Differences in the correlation of intercept and within-person change
-- Differences in reliability or growth curve misfit (differences in measurement error as part of the model residual variance)
----
+--
 
+- Differences in mean within-person changes
+
+--
+- Differences in interindividual differences in within-person change
+--
+
+- Differences in the mean of the intercept
+--
+
+- Differences in interindividual differences in the intercept
+--
+
+- Differences in the correlation of intercept and within-person change
+--
+
+- Differences in reliability or growth curve misfit (differences in measurement error as part of the model residual variance)
+
+---
+class: inverse, center, middle
+# Evaluating Splits in (SEM) Trees
 ---
 # Testing for group differences
 
-Old-school likelihood ratio test, given a parametric model $M$ with parameters $\theta$ and data $X$, which is exhaustively split into $X_1$ and $X_2$ with corresponding maximum likelihood estimates $\theta_1$ and $\theta_2$:
+`r Citet(bib, c("brandmaier2013structural"))` proposed  old-school likelihood ratio test, given a parametric model $M$ with ML parameter estimates $\hat{theta}$ and data $X$, which is exhaustively split into $X_1$ and $X_2$ with corresponding maximum likelihood estimates $\hat{theta}_1$ and $\hat{theta}_2$:
+--
 
-$$LR =-2LL \left( X_{1}|M(\theta_1))-2LL(X_{2}|M(\theta_2)) + 2LL(X|\theta) \right)$$
-which is asymptotically $\chi^2$-distributed if H0 is true (i.e., no group differences)
+$$LR =-2LL \left( X_{1}|M(\hat{\theta}_1))-2LL(X_{2}|M(\hat{\theta}_2)) + 2LL(X|\hat{\theta}) \right)$$
+which is asymptotically $\chi^2$-distributed if H0 is true (i.e., no group differences) with $df = dim(\theta)$
 ---
 <img src="unsplash/matthew-henry-2Ts5HnA67k8-unsplash.jpg">
 ```{r}
@@ -238,55 +252,63 @@ which is asymptotically $\chi^2$-distributed if H0 is true (i.e., no group diffe
 # Score-based Tests
 
 .pull-left[
-- Likelihood ratio tests are computationally expensive and naive LR test suffer from multiple testing issues
-- Let's use score tests (proposed for general model-based partitioning by `r Citet(bib, c("zeileis2008model"))` )
+- Likelihood ratio tests are computationally expensive, we get convergence problems, naive LR test suffer from multiple testing issues and variable selection bias  `r Citep(bib, c("strobl2007bias"))` 
+- Let's use score tests (proposed for general model-based partitioning by `r Citet(bib, c("zeileis2008model"))` 
 ]
 
 .pull-right[
-![](unsplash/alan-king-KZv7w34tluA-unsplash.jpg)
+<center>
+![:scale 60%](unsplash/alan-king-KZv7w34tluA-unsplash.jpg)
 ]
 ---
 # Score-based Tests
 
 .pull-left[
-![:scale 50%](img/csp.png)
+![:scale 90%](img/csp.png)
 ]
 .pull-right[
 - Score based test statistics are functions of the case-wise derivatives of the (log)likelihood function
-- They form the backbone of MOB in `party/partykit` and were also brought to SEM trees by @arnold2021score
+- Backbone of MOB in `party/partykit` and were also brought to SEM trees by `r Citep(bib,"arnold2021score")`
+
+- Under H0 (no informative split), the cumulative score process is a Brownian bridge
+- Various statistics available (e.g. maximum Lagrange multiplier $maxLM$; double maximum for illustration on the left)
 ]
 ---
 
-# Focus parameters
+# Focus parameters with LR tests
 
-Instead of:
-$$LR =-2LL \left( X_{1}|M(\theta_1))-2LL(X_{2}|M(\theta_2)) + 2LL(X|\theta) \right)$$
-we estimate
+For $\chi^2$-based tests, instead of:
+$$LR =-2LL \left( X_{1}|M(\hat{\theta}_1))-2LL(X_{2}|M(\hat{\theta}_2)) + 2LL(X|\hat{\theta}) \right)$$
+we estimate _loss of fit due to constraining only focus parameters to identity_:
+
 $$ LR =-2LL \left( X_{1}|M(\theta_1))-2LL(X_{2}|M(\theta_2) \right) -2LL \left( X_{1}|M(\theta'_1))-2LL(X_{2}|M(\theta'_2)) \right) $$
+
 with focus parameters constrained to be identical across groups for $\theta'_1$ and $\theta'_2$
 
-this $LR$ now corresponds to the misfit incurred by constraining only the focus parameters to identity
-
 
 
 ---
 # Focus parameters
--> more expensive because we need to obtain maximum likelihood estimates for every possible split:
-$$argmax_{\theta'_1, \theta'_2}  -2LL \left( X_{1}|M(\theta'_1))-2LL(X_{2}|M(\theta'_2)) \right)$$
----
 
+This is more expensive because we need to obtain maximum likelihood estimates for every possible split:
+$$argmax_{\theta'_1, \theta'_2}  -2LL \left( X_{1}|M(\theta'_1))-2LL(X_{2}|M(\theta'_2)) \right)$$
+
+In total, we need two more iterative optimization processes per each potential split point (with potentially more convergence issues)
+---
+# Forests
 
 # Variable Importance
 
 .pull-left[
 - single trees are unstable ->  subsample data and predictors to create a forest with diverse predictor combinations
 - using a permutation approach, estimate contribution of each predictor to misfit `r Citep(bib,"brandmaier2016theory")`
-- Example: Terminal decline of happiness from SOEP data
-`r Citep(bib,"brandmaier2017terminal")`
-]
 - (but beware of marginal importance; `r Citep(bib,"strobl2008conditional")`)
 
+]
+
 .pull-right[
+- Example: Terminal decline of happiness from SOEP data
+`r Citep(bib,"brandmaier2017terminal")`
 <img src="img/varimp-example-soep.png" style="width: 140%">
 
 ]
@@ -299,9 +321,12 @@ class: center middle
 ---
 # Univariate predictions
 
-Let's simulate some Gaussian data and two predictors `pred_mean` and `pred_var` that perfectly predict differences in either location or scale. 
+Let's simulate some Gaussian data and two dichotomous predictors `pred_mean` and `pred_var` that perfectly predict differences in either location or scale.  Also, we throw three uninformative predictors in the mix (binomial distributed):
 
-![:scale 20%](img/simulated_four_univ.png)
+<center>
+![:scale 45%](img/04_simulated_four_univ.png)
+
+Run a SEM forest based on a single indicator model with two parameters.
 
 ```{r}
 #vim2<-readRDS("data/03_vim2.rds")
@@ -309,17 +334,17 @@ Let's simulate some Gaussian data and two predictors `pred_mean` and `pred_var` 
 ```
 ---
 # Inspect first tree
-Tree #1 from a forest without focus parameters
+(Pruned) Tree from a forest without focus parameters
 ```{r}
 forest <- readRDS("data/04_sf.rds")
 
-plot(forest$forest[[1]])
+plot(semtree::prune(forest$forest[[2]],1))
 ```
 ---
 # Inspect second tree
+Another (pruned) Tree from a forest without focus parameters
 ```{r}
-
-plot(prune(forest$forest[[3]],2))
+plot(prune(forest$forest[[4]],2))
 ```
 ---
 # Problem
@@ -348,6 +373,14 @@ Algorithm:
 
 - For each tree, for each observation $x$, find leaf model $M_1$ by traversing the tree and leaf model by traversing the tree after permuting predictor $M_2$
 - Get the estimates $\hat{\theta}_{M1}^f$ from $M_1$ and evaluate the likelihood of $x$ given $M_2$ using $\hat{\theta}^*= \left{  \hat{\theta}_{M2}^0;  \hat{\theta}_{M1}^f \right}$
+
+---
+
+# 
+
+---
+class: inverse, center, middle
+# Some more examples
 
 ---
 
@@ -385,7 +418,7 @@ plot(j_tree)
 ---
 # Regression SEM Tree
 
-<TODO IMAGE>
+![](img/regression.png)
 
 ---
 
@@ -407,22 +440,29 @@ Identical result: somewhat shallower slope for older journals
 ```{r}
 tree<-readRDS("data/02_tree_unc.rds")
 plot(tree)
+
+param_leafs<-sapply(getLeafs(tree), function(x){ x$params})
 ```
 ]
 ---
-```{r}
-knitr::include_graphics("img/contourplot2d-simulation-4colors.png")
-```
+# Parameter Estimates of Trees
 
+Here, we find differences w.r.t. all parameters (e.g., predictor mean and variance _MEAN\\_lpc_ and _VAR\\_lpc_) and also a large range of regression coefficients $b_1$ ranging from $min(param_leafs["b1",])$ to $max(param_leafs["b1",])$.
+```{r}
+knitr::kable(param_leafs)
+```
+---
+class: inverse, center, middle
+
+# Measurement Invariance
 ---
 
 # Measurement Invariance Testing
 
-- "Lack of evidence of measurement invariance equivocates conclusions and casts
-doubt on theory in the behavioral sciences" `r Citet(bib, "horn1992practical")`
-- Measurement Invariance is usually based on multigrop SEM/CFA `r Citet(bib, "marsh2014exploratory")`
-- SEM Trees were suggested as a tool for measurement invariance testing, that is, to explore differential item functioning `r Citet(bib, c("finch2017structural","sterner2023exploratory"))`
-- CFA partitioning can even be used without any groups at all `r Citet(bib, c("merkle2013tests"))`  
+- "Lack of evidence of measurement invariance equivocates conclusions and casts doubt on theory in the behavioral sciences" `r Citep(bib, "horn1992practical")`
+- Measurement Invariance is usually based on multigrop SEM/CFA `r Citep(bib, "marsh2014exploratory")`
+- SEM Trees were suggested as a tool for measurement invariance testing, that is, to explore differential item functioning `r Citep(bib, c("finch2017structural","sterner2023exploratory"))`
+- CFA partitioning can even be used without any groups at all `r Citep(bib, c("merkle2013tests"))`  
 
 
 - `r Citet(bib, c("finch2017structural"))`  looked at a _attitudes towards reading items_ questionnaire
@@ -442,11 +482,33 @@ doubt on theory in the behavioral sciences" `r Citet(bib, "horn1992practical")`
 
 ---
 # BFI
-- With focus parameters, specify a CFA
-- choose factor loadings as focus parameters
 
-![](img/06)
+As an example:
 
+-  International Personality Item Pool from `psych` package
+- $n=2,800$
+- 25 personality self report items (representing 5 OCEAN factors)
+- Three demographic variables as predictors
+
+---
+# BFI
+- specify a CFA of five indicators for the construct _extraversion_: "don't talk a lot", "find it difficult to approach others", "Know how to captivate propl", "Make friends easily", "Take charge"
+- anchor item: "don't talk a lot"
+- choose only factor loadings and residuals as focus parameters (but not intercepts or latent mean/variance)
+- Predictors
+---
+# BFI Loadings
+![](img/06bfi-tree-loadings.png)
+f3: Know how to captivate people
+f5: Take charge
+---
+# BFI Forest
+Permutation variable importance with focus parameters loadings:
+
+```{r}
+vim <- readRDS("data/06_bfi_vim.rds")
+plot(vim)
+```
 ---
 class: inverse, center, middle
 # Reproducibility + Exploratory Methods

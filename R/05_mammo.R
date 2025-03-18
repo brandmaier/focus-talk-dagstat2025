@@ -88,6 +88,6 @@ ggplot(data, aes(x = x, y = y)) +
   coord_cartesian(xlim=c(-15,10))+
   theme_minimal()
 
-ggsave(filename="img/plot_mammo_partytree.png")
+ggsave(filename="img/plot_mammo_partytree.png",plot=last_plot())
 
 #saveRDS(object=, file="dat/")

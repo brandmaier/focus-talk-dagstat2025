@@ -3,6 +3,8 @@
 #
 library(semtree)
 library("psych")
+library(tictoc)
+library(future)
 data("bfi")
 
 
@@ -85,6 +87,8 @@ params<-sapply(leafs, function(x) {omxGetParameters(x$model)[paste0("f",2:5)]})
 #edu <- c(0,0,1,1,0.5,0.5,0,1)
 
 
+saveRDS(tree, file="data/06_tree_focus.rds")
+
 plot(prune(tree,2))
 
 plot(tree)
@@ -106,13 +110,17 @@ tidyr::pivot_longer(tt, 1:5) %>% ggplot(aes(y=value,x=name, fill=name))+geom_col
 
 ggsave(filename="img/06bfi-tree-loadings.png", plot=last_plot(), width = 6,height=3)
 
+tic()
+plan(multisession, workers = 7)
 frst <- semforest(model=run2, bfisub, 
                 control = semforest_score_control(num.trees=100),
-                constraints=list(focus.parameters=c("f2","f3","f4","f5")))
+                constraints=list(focus.parameters=c("f2","f3","f4","f5",paste0("e",1:5))))
+toc()
+saveRDS(object=frst, file="data/06_forest.rds")
 
+tic()
+vim <- varimp(frst, method="permutationFocus")
+toc()
 
-
-
-#vim <- varimp(frst, method="permutationFocus")
 plot(vim)
 saveRDS(object=vim, file="data/06_bfi_vim.rds")
