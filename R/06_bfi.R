@@ -124,3 +124,10 @@ toc()
 
 plot(vim)
 saveRDS(object=vim, file="data/06_bfi_vim.rds")
+
+
+
+# Boruta
+#semtree::boruta(model=run2, 
+#                data=bfisub,
+#                control = semforest_score_control(num.trees=100))

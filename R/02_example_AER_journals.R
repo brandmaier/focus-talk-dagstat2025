@@ -64,3 +64,13 @@ plot(tree.foc)
 
 saveRDS(tree.unc, file = "data/02_tree_unc.rds")
 saveRDS(tree.foc, file = "data/02_tree_foc.rds")
+
+
+
+#data("Journals", package = "AER")
+Journals[, "ind"]<-ifelse(Journals$citations>=371.5 & Journals$citations<972.5 & Journals$price<164, 1,0)
+Journals$ind <- as.factor(Journals$ind)
+library(tidyr)
+library(ggplot2)
+
+Journals %>% ggplot(aes(x=lpc, y=logsubs, group=ind, color=ind))+geom_point()

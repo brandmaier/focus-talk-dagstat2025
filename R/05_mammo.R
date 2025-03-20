@@ -1,5 +1,7 @@
+library(tidyverse)
+library(ggplot2)
 data("mammoexp", package = "TH.data")
-mtree <- ctree(ME ~ ., data = mammoexp,control = ctree_control(alpha=0.1))
+mtree <- ctree(ME ~ ., data = mammoexp,control = ctree_control(alpha=0.05))
 
 plot(mtree)
 
@@ -43,12 +45,12 @@ fit <- mxRun(sem)
 
 summary(fit)
 
-tree<-semtree(sem, data=mammoexp, control=semtree.control(min.bucket = 50,bonferroni = TRUE),
-              constraints = semtree.constraints(focus.parameters=c("mean_y")))
+#tree<-semtree(sem, data=mammoexp, control=semtree.control(min.bucket = 50,bonferroni = TRUE),
+#              constraints = semtree.constraints(focus.parameters=c("mean_y")))
 
 tree_nc<-semtree(sem, data=mammoexp, control=semtree.control(min.bucket = 50,bonferroni = TRUE))
 
-plot(tree)
+plot(tree_nc)
 
 saveRDS(tree, file="data/mammo_semtree.rds")
 
@@ -77,17 +79,22 @@ density_vals <- pnorm(x_vals, mean = mean_value, sd = sd_value)
 data <- data.frame(x = x_vals, y = density_vals)
 }
 
+data <- ff(params1)
+
 # Plot
-ggplot(data, aes(x = x, y = y)) +
-  geom_line(data=ff(params1),color = "blue", size = 1) +  # Normal distribution curve
-  geom_line(data=ff(params2),color = "red", size = 1) +  # Normal distribution curve
-  geom_line(data=ff(params3),color = "green", size = 1) +  # Normal distribution curve
+ggplot2::ggplot(data, aes(x = x, y = y)) +
+  geom_line(data=ff(params1),color = "blue", linewidth = 2) +  # Normal distribution curve
+  geom_line(data=ff(params2),color = "red", linewidth = 1) +  # Normal distribution curve
+  geom_line(data=ff(params3),color = "green", linewidth = 1) +  # Normal distribution curve
   geom_vline(xintercept = c(-1, 1), linetype = "dashed", color = "black", size = 1) + # Thresholds
   labs(title = "Thresholds",
        x = "X", y = "Density") +
   coord_cartesian(xlim=c(-15,10))+
   theme_minimal()
 
-ggsave(filename="img/plot_mammo_partytree.png",plot=last_plot())
+ggsave(filename="img/05_plot_mammo_partytree.png",plot=last_plot())
 
+
+saveRDS(object=tree_nc, file = "data/05_mammo_tree.rds")
+saveRDS(object=mtree, file="data/05_mammo_partytree.rds")
 #saveRDS(object=, file="dat/")

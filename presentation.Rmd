@@ -81,7 +81,7 @@ library(qrcode)
 ```
 class: center middle
 
-# Question: “Given a multivariate model, which predictors/covariates are relevant?
+# Question: “Given a (theory-based) multivariate model, which predictors/covariates are relevant?
 
 ---
 
@@ -95,7 +95,7 @@ Roadmap
 
 
 
-# SEM
+# SEM = Structure + Measurement
 
 ```{r}
 knitr::include_graphics("img/SEM-measurement-structure.png")
@@ -111,9 +111,9 @@ $$\mathbf{x} = \mathbf{\tau} + \mathbf{\Lambda\xi}+\mathbf{\epsilon} $$
 ---
 # SEM
 
-With $\Theta$ being the covariance of the latent factors and $\Psi$ a covariance matrix of the residuals, we obtain a model-implied covariance matrix:
+With $\Phi$ being the covariance of the latent factors and $\Psi$ a covariance matrix of the residuals, we obtain a model-implied covariance matrix:
 
-$$\mathbf{ \Sigma = \Lambda \Theta \Lambda^T + \Psi }$$
+$$\mathbf{ \Sigma = \Lambda \Phi \Lambda^T + \Psi }$$
 And (covariance) likelihood fit function (based on multivariate normal assumption):
 
 <!--
@@ -124,7 +124,7 @@ $$-2LL = ln|\mathbf{\Sigma}|+tr\left(\mathbf{\Sigma^{-1} S} \right)-ln\left| \ma
 
 ---
 class: center
-# Commercial Break: Ωnyx
+# <s>Commercial</s> Break: Ωnyx
 
 
 ![:scale 60%](img/onyx-lavaan-screenshot2.png)
@@ -152,7 +152,7 @@ https://onyx-sem.com/ and [https://github.com/brandmaier/onyx](https://github.co
 class: inverse, center, middle
 # SEM Trees
 
-(an instance of model-based recursive partitioning `r Citet(bib, c("zeileis2008model"," brandmaier2013structural"))` )
+(an instance of model-based recursive partitioning `r Citep(bib, c("zeileis2008model"," brandmaier2013structural"))` )
 
 ---
 # Theory-guided exploration
@@ -210,7 +210,7 @@ class: inverse, center, middle
 
 # What do splits represent?
 
-Splits may represent any combination of:
+Splits in an LGCM may represent any combination of:
 --
 
 - Differences in mean within-person changes
@@ -236,23 +236,19 @@ class: inverse, center, middle
 ---
 # Testing for group differences
 
-`r Citet(bib, c("brandmaier2013structural"))` proposed  old-school likelihood ratio test, given a parametric model $M$ with ML parameter estimates $\hat{theta}$ and data $X$, which is exhaustively split into $X_1$ and $X_2$ with corresponding maximum likelihood estimates $\hat{theta}_1$ and $\hat{theta}_2$:
+`r Citet(bib, c("brandmaier2013structural"))` proposed  old-school likelihood ratio test, given a parametric model $M$ with ML parameter estimates $\hat{\theta}$ and data $X$, which is exhaustively split into $X_1$ and $X_2$ with corresponding maximum likelihood estimates $\hat{\theta}_1$ and $\hat{\theta}_2$:
 --
 
-$$LR =-2LL \left( X_{1}|M(\hat{\theta}_1))-2LL(X_{2}|M(\hat{\theta}_2)) + 2LL(X|\hat{\theta}) \right)$$
-which is asymptotically $\chi^2$-distributed if H0 is true (i.e., no group differences) with $df = dim(\theta)$
+$$LR = -2LL \left( X_{1}|M(\hat{\theta}_1) \right)-2LL \left(X_{2}|M(\hat{\theta}_2) \right) + 2LL \left(X|\hat{\theta}) \right)$$
+which is asymptotically $\chi^2$-distributed if $H_0$ is true (i.e., no group differences) with $df = dim(\theta)$
 ---
-<img src="unsplash/matthew-henry-2Ts5HnA67k8-unsplash.jpg">
-```{r}
+![:scale 90%](unsplash/matthew-henry-2Ts5HnA67k8-unsplash.jpg)
 
-"unsplash/alan-king-KZv7w34tluA-unsplash.jpg"
-
-```
 ---
 # Score-based Tests
 
 .pull-left[
-- Likelihood ratio tests are computationally expensive, we get convergence problems, naive LR test suffer from multiple testing issues and variable selection bias  `r Citep(bib, c("strobl2007bias"))` 
+- Likelihood ratio tests are computationally expensive, we get convergence problems, naive LR test suffer from multiple testing issues and variable selection bias like CART  `r Citep(bib, c("strobl2007bias"))` 
 - Let's use score tests (proposed for general model-based partitioning by `r Citet(bib, c("zeileis2008model"))` 
 ]
 
@@ -267,21 +263,29 @@ which is asymptotically $\chi^2$-distributed if H0 is true (i.e., no group diffe
 ![:scale 90%](img/csp.png)
 ]
 .pull-right[
+.small[
 - Score based test statistics are functions of the case-wise derivatives of the (log)likelihood function
 - Backbone of MOB in `party/partykit` and were also brought to SEM trees by `r Citep(bib,"arnold2021score")`
-
 - Under H0 (no informative split), the cumulative score process is a Brownian bridge
 - Various statistics available (e.g. maximum Lagrange multiplier $maxLM$; double maximum for illustration on the left)
+]
 ]
 ---
 
 # Focus parameters with LR tests
 
 For $\chi^2$-based tests, instead of:
-$$LR =-2LL \left( X_{1}|M(\hat{\theta}_1))-2LL(X_{2}|M(\hat{\theta}_2)) + 2LL(X|\hat{\theta}) \right)$$
-we estimate _loss of fit due to constraining only focus parameters to identity_:
 
-$$ LR =-2LL \left( X_{1}|M(\theta_1))-2LL(X_{2}|M(\theta_2) \right) -2LL \left( X_{1}|M(\theta'_1))-2LL(X_{2}|M(\theta'_2)) \right) $$
+$$LR = -2LL \left( X_{1}|M(\hat{\theta}_1) \right)-2LL \left(X_{2}|M(\hat{\theta}_2) \right) + 2LL \left(X|\hat{\theta}) \right)$$
+we estimate *loss of fit due to constraining only focus parameters* to identity across groups:
+
+$$ LR = -2LL \left( X_1 \mid M(\hat{\theta}_1) \right) -2LL \left( X_2 \mid M(\hat{\theta}_2) \right) -2LL \left( X_1 \mid M(\hat{\theta}'_1) \right) -2LL \left( X_2 \mid M(\hat{\theta}'_2) \right) $$
+
+
+<!-- 
+\left( X_{2} \mid M(\hat{\theta}_2) \right) 
+-2LL \left( X_{1} \mid M(\hat{\theta}'_1) \right) -2LL \left(X_{2}|M(\hat{\theta}'_2)) \right)
+-->
 
 with focus parameters constrained to be identical across groups for $\theta'_1$ and $\theta'_2$
 
@@ -295,19 +299,21 @@ $$argmax_{\theta'_1, \theta'_2}  -2LL \left( X_{1}|M(\theta'_1))-2LL(X_{2}|M(\th
 
 In total, we need two more iterative optimization processes per each potential split point (with potentially more convergence issues)
 ---
-# Forests
 
 # Variable Importance
 
 .pull-left[
-- single trees are unstable ->  subsample data and predictors to create a forest with diverse predictor combinations
+- single trees are unstable
+- subsample data and predictors to create a forest with diverse predictor combinations
 - using a permutation approach, estimate contribution of each predictor to misfit `r Citep(bib,"brandmaier2016theory")`
-- (but beware of marginal importance; `r Citep(bib,"strobl2008conditional")`)
+- ...but beware of marginal importance; `r Citep(bib,"strobl2008conditional")`
 
 ]
 
 .pull-right[
-- Example: Terminal decline of happiness from SOEP data
+.small[
+Example: Terminal decline of happiness from SOEP data
+]
 `r Citep(bib,"brandmaier2017terminal")`
 <img src="img/varimp-example-soep.png" style="width: 140%">
 
@@ -326,12 +332,30 @@ Let's simulate some Gaussian data and two dichotomous predictors `pred_mean` and
 <center>
 ![:scale 45%](img/04_simulated_four_univ.png)
 
-Run a SEM forest based on a single indicator model with two parameters.
+Run a SEM forest based on a single indicator model with two parameters and compute variable importance
 
+---
+# (Marginal) Variable importance estimate
 ```{r}
-#vim2<-readRDS("data/03_vim2.rds")
-#vimc<-readRDS("data/03_vimc.rds")
+vim_old<-readRDS("data/04_univsim_vim_semtree_f1old.rds")
+plot(vim_old)
 ```
+This is flawed because the influence of _pred\_var_ is overestimated.
+---
+
+# Problem
+
+### Problem
+
+Variable importance estimates overestimate the importance of predictors, which predict differences in parameters outside the focus
+
+
+### Algorithm (for a given predictor $p$) to estimate _marginal importance_:
+
+With SEM forest, we grow trees with no stopping rule ($\alpha=1$)
+ in order to explore deep conditional effects (~interactions) in the trees
+
+- For each tree, for every observation $x$ in the _OOB_, we compute the -2LL of observing $x$ given the leaf found before and after permuting predictor $p$
 ---
 # Inspect first tree
 (Pruned) Tree from a forest without focus parameters
@@ -349,17 +373,6 @@ plot(prune(forest$forest[[4]],2))
 ---
 # Problem
 
-### Problem
-
-With SEM forest, we grow trees with no stopping rule ($\alpha=1$)
- in order to explore deep conditional effects (~interactions) in the trees
-
-### Algorithm (for a given predictor $p$) to estimate _marginal importance_:
- 
-- For each tree, for every observation $x$ in the _OOB_, we compute the (-2log)likelihood of observing $x$ given the leaf found before and after permuting predictor $p$
----
-# Problem
-
 Problem: This measure of variable importance considers differences w.r.t all parameters of the SEM
 
 Solution: Estimate misfit incurred by only the focus parameters
@@ -372,11 +385,55 @@ Let the parameter estimates of a SEM $M$ be $\hat{\theta}_M$ with a partition in
 Algorithm:
 
 - For each tree, for each observation $x$, find leaf model $M_1$ by traversing the tree and leaf model by traversing the tree after permuting predictor $M_2$
-- Get the estimates $\hat{\theta}_{M1}^f$ from $M_1$ and evaluate the likelihood of $x$ given $M_2$ using $\hat{\theta}^*= \left{  \hat{\theta}_{M2}^0;  \hat{\theta}_{M1}^f \right}$
+- Get the estimates $\hat{\theta}_{M1}^f$ from $M_1$ and evaluate the likelihood of $x$ given $M_2$ using $\hat{\theta}^*= \left\{  \hat{\theta}_{M2}^0;  \hat{\theta}_{M1}^f \right\}$
 
 ---
 
-# 
+# Back to the simulation
+
+Simulated Data:
+![:scale 45%](img/04_simulated_four_univ.png)
+
+---
+# Importance Estimates
+
+Forest with (score-based) focus parameter on mean:
+
+.pull-left[
+```{r ll}
+vim_new<-readRDS("data/04_univsim_vim_semtree_f1.rds")
+vim_old<-readRDS("data/04_univsim_vim_semtree_f1old.rds")
+plot(vim_old)
+```
+]
+
+.pull-right[
+```{r lr}
+plot(vim_new)
+```
+]
+---
+# To Focus or not to focus
+
+- Trees and forests yield identical results in `partykit` and `semtree` with focus parameter on mean 
+
+```{r}
+tree_party <- readRDS("data/04_univsim_vim_partykit.rds")
+tree_semtree <- readRDS("data/04_univsim_semtree_f1.rds")
+```
+.pull-left[
+```{r}
+plot(tree_party)
+```
+]
+
+.pull-right[
+```{r}
+plot(tree_semtree)
+```
+]
+
+W/o focus: potentially interesting because differences in variances may also be of interest (e.g., meaningful individual differences or reliability differences)
 
 ---
 class: inverse, center, middle
@@ -442,16 +499,19 @@ tree<-readRDS("data/02_tree_unc.rds")
 plot(tree)
 
 param_leafs<-sapply(getLeafs(tree), function(x){ x$params})
+colnames(param_leafs)<-paste0("Leaf #",1:ncol(param_leafs))
+param_leafs <- round(param_leafs,2)
 ```
 ]
 ---
 # Parameter Estimates of Trees
 
-Here, we find differences w.r.t. all parameters (e.g., predictor mean and variance _MEAN\\_lpc_ and _VAR\\_lpc_) and also a large range of regression coefficients $b_1$ ranging from $min(param_leafs["b1",])$ to $max(param_leafs["b1",])$.
+Here, we find differences w.r.t. all parameters (e.g., predictor mean and variance _MEAN\_lpc_ and _VAR\_lpc_) and also a large range of regression coefficients $b_1$ ranging from `r min(param_leafs["b1",])` to `r max(param_leafs["b1",])`.
 ```{r}
 knitr::kable(param_leafs)
 ```
 ---
+
 class: inverse, center, middle
 
 # Measurement Invariance
@@ -460,12 +520,18 @@ class: inverse, center, middle
 # Measurement Invariance Testing
 
 - "Lack of evidence of measurement invariance equivocates conclusions and casts doubt on theory in the behavioral sciences" `r Citep(bib, "horn1992practical")`
+--
+
 - Measurement Invariance is usually based on multigrop SEM/CFA `r Citep(bib, "marsh2014exploratory")`
+--
+
 - SEM Trees were suggested as a tool for measurement invariance testing, that is, to explore differential item functioning `r Citep(bib, c("finch2017structural","sterner2023exploratory"))`
+--
+
 - CFA partitioning can even be used without any groups at all `r Citep(bib, c("merkle2013tests"))`  
+--
 
-
-- `r Citet(bib, c("finch2017structural"))`  looked at a _attitudes towards reading items_ questionnaire
+- As an example, `r Citet(bib, c("finch2017structural"))`  looked at a _attitudes towards reading items_ questionnaire
 
 
 
@@ -473,11 +539,11 @@ class: inverse, center, middle
 # Measurement Invariance
 
 .pull-left[
-![:scale 35%](img/finch-tree-nations.png)
+![:scale 90%](img/finch-tree-nations.png)
 ]
 
 .pull-right[
-> SEMtree does not isolate specific differences among model parameters, but rather identifies differences in whole patterns of model parameters `r Citet(bib, "finch2017structural")`
+> SEMtree does not isolate specific differences among model parameters, but rather identifies differences in whole patterns of model parameters - `r Citep(bib, "finch2017structural")`
 ]
 
 ---
@@ -485,22 +551,31 @@ class: inverse, center, middle
 
 As an example:
 
--  International Personality Item Pool from `psych` package
+-  International Personality Item Pool `bfi` from `psych` package
 - $n=2,800$
 - 25 personality self report items (representing 5 OCEAN factors)
-- Three demographic variables as predictors
+- Three demographic variables as predictors: age (metric), education (ordinal), sex (nominal)
 
 ---
 # BFI
-- specify a CFA of five indicators for the construct _extraversion_: "don't talk a lot", "find it difficult to approach others", "Know how to captivate propl", "Make friends easily", "Take charge"
+
+- Specify a CFA of five indicators for the construct _extraversion_: "don't talk a lot", "find it difficult to approach others", "Know how to captivate propl", "Make friends easily", "Take charge"
 - anchor item: "don't talk a lot"
 - choose only factor loadings and residuals as focus parameters (but not intercepts or latent mean/variance)
-- Predictors
+- Predictors: age, sex, and education
+---
+# BFI Tree
+```{r}
+tree<-readRDS("data/06_tree_focus.rds")
+plot(prune(tree,3))
+```
 ---
 # BFI Loadings
-![](img/06bfi-tree-loadings.png)
-f3: Know how to captivate people
-f5: Take charge
+![:scale 80%](img/06bfi-tree-loadings.png)
+
+.small[
+(f3: Know how to captivate people and f5: Take charge)
+]
 ---
 # BFI Forest
 Permutation variable importance with focus parameters loadings:
@@ -510,6 +585,68 @@ vim <- readRDS("data/06_bfi_vim.rds")
 plot(vim)
 ```
 ---
+
+# Outlook I
+
+- BORUTA (with Priyanka Paul & Timothy Brick, PennState)
+- BORUTA is a heuristic to determine a cut-off between important and not-important variables 
+- Based on shadow features 
+
+---
+
+# Outlook II
+
+Ordinal models using threshold models (example: mammography screening experience and opinions from Citep(bib, "hothorn2006unbiased")`)
+
+.pull-left[
+```{r}
+ptree<-readRDS("data/05_mammo_partytree.rds")
+stree<-readRDS("data/05_mammo_tree.rds")
+plot(ptree)
+```
+
+.small[
+- SYMPT: You do not need a mamogram unless you develop symptoms (4 point Likert)
+- PB: Perceived benefit (low value = strong benefit)
+]
+]
+
+.pull-right[
+![](img/05_plot_mammo_partytree.png)
+]
+
+# Summary
+
+- SEM Trees and Forests are a form of model-based recursive partitioning
+- They can be implemented either via the `semtree` package or via `partykit` (https://www.zeileis.org/news/lavaantree/)
+- Focus parameters may be important when exploring the importance of predictors for subsets of parameters (e.g., individual differences vs means, or intercept vs slopes in growth models)
+
+# Thank You
+
+- Slides: https://github.com/brandmaier/focus-talk-dagstat2025
+
+- Package on CRAN: `semtree`
+
+.pull-left[
+Contact: andreas.brandmaier@medicalschool-berlin.de or .strong[@brandmaier.bsky.social] on Bluesky or .strong[https://www.brandmaier.de]
+
+]
+
+.pull-right[
+
+```{r, echo=FALSE}
+link <- "https://github.com/brandmaier/focus-talk-dagstat2025"
+```
+
+```{r, echo=FALSE, out.width = "30%", out.extra='style="float:center"'}
+#if (!file.exists("img/qr_slides.svg")) {
+generate_svg(qr_code(link), here::here("img/", "qr_slides.svg"), foreground = secondary_color, background = primary_color, show = FALSE)
+#}
+knitr::include_graphics("img/qr_slides.svg")
+```
+]
+---
+
 class: inverse, center, middle
 # Reproducibility + Exploratory Methods
 ---
@@ -587,35 +724,17 @@ class: center, middle
 (now on CRAN: reproducibleRchunks)
 
 ---
-# Thank You
-
-- Slides: https://github.com/brandmaier/focus-talk-dagstat2025
-
-- Packages on CRAN: `semtree`, `repro`, and `reproducibleRchunks`
-
-.pull-left[
-Contact: andreas.brandmaier@medicalschool-berlin.de or .strong[@brandmaier.bsky.social] on Bluesky or .strong[https://www.brandmaier.de]
-
-]
-
-.pull-right[
-
-```{r, echo=FALSE}
-link <- "https://github.com/brandmaier/focus-talk-dagstat2025"
-```
-
-```{r, echo=FALSE, out.width = "30%", out.extra='style="float:center"'}
-#if (!file.exists("img/qr_slides.svg")) {
-generate_svg(qr_code(link), here::here("img/", "qr_slides.svg"), foreground = secondary_color, background = primary_color, show = FALSE)
-#}
-knitr::include_graphics("img/qr_slides.svg")
-```
-]
----
 # References
 
 .small[
 ```{r, results='asis', echo=FALSE}
-PrintBibliography(bib)
+PrintBibliography(bib, start=1, end=6)
+```
+]
+
+---
+.small[
+```{r, results='asis', echo=FALSE}
+PrintBibliography(bib, start=7)
 ```
 ]
