@@ -596,7 +596,7 @@ plot(vim)
 
 # Outlook II
 
-Ordinal models using threshold models (example: mammography screening experience and opinions from Citep(bib, "hothorn2006unbiased")`)
+Ordinal models using threshold models (example: mammography screening experience and opinions from `r Citep(bib, "hothorn2006unbiased")`)
 
 .pull-left[
 ```{r}
@@ -614,13 +614,14 @@ plot(ptree)
 .pull-right[
 ![](img/05_plot_mammo_partytree.png)
 ]
-
+---
 # Summary
 
 - SEM Trees and Forests are a form of model-based recursive partitioning
 - They can be implemented either via the `semtree` package or via `partykit` (https://www.zeileis.org/news/lavaantree/)
 - Focus parameters may be important when exploring the importance of predictors for subsets of parameters (e.g., individual differences vs means, or intercept vs slopes in growth models)
 
+---
 # Thank You
 
 - Slides: https://github.com/brandmaier/focus-talk-dagstat2025
