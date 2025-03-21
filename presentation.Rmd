@@ -14,6 +14,7 @@ output:
       slideNumberFormat: "%current%"
       highlightStyle: github
       highlightLines: true
+      highlightSpans: true
       ratio: 16:9
       countIncrementalSlides: true
  
@@ -87,7 +88,7 @@ class: center middle
 
 class: inverse center middle
 
-# SEM + Decision Trees + Random Forests + Variable Importance + Focus Parameters
+# SEM + Decision Trees + Focus Parameters + Random Forests + Variable Importance
 
 
 Roadmap
@@ -153,7 +154,7 @@ https://onyx-sem.com/ and [https://github.com/brandmaier/onyx](https://github.co
 class: inverse, center, middle
 # SEM Trees
 
-(an instance of model-based recursive partitioning `r Citep(bib, c("zeileis2008model"," brandmaier2013structural"))` )
+an instance of model-based recursive partitioning `r Citep(bib, c("zeileis2008model","brandmaier2013structural"))` 
 
 ---
 # Theory-guided exploration
@@ -237,12 +238,53 @@ class: inverse, center, middle
 ---
 # Testing for group differences
 
-`r Citet(bib, c("brandmaier2013structural"))` proposed  old-school likelihood ratio test, given a parametric model $M$ with ML parameter estimates $\hat{\theta}$ and data $X$, which is exhaustively split into $X_1$ and $X_2$ with corresponding maximum likelihood estimates $\hat{\theta}_1$ and $\hat{\theta}_2$:
+`r Citet(bib, c("brandmaier2013structural"))` proposed  old-school likelihood ratio test for _split selection_:
+
+Given a parametric model $M$ with ML parameter estimates $\hat{\theta}$ and data $X$, which is exhaustively split into $X_1$ and $X_2$ with corresponding maximum likelihood estimates $\hat{\theta}_1$ and $\hat{\theta}_2$:
 --
 
 $$LR = -2LL \left( X_{1}|M(\hat{\theta}_1) \right)-2LL \left(X_{2}|M(\hat{\theta}_2) \right) + 2LL \left(X|\hat{\theta}) \right)$$
 which is asymptotically $\chi^2$-distributed if $H_0$ is true (i.e., no group differences) with $df = dim(\theta)$
 ---
+# Split selection
+
+- Starting at the root of a tree, find best split by greedy search
+- Depending on measurement scale
+  - all possible split points for ordinal and metric variables (linear costs)
+  - all possible dichotomizations for nominal variables (exponential costs)
+- Continue splitting if difference is significant
+
+---
+
+# Focus parameters with LR tests
+
+For $\chi^2$-based tests, instead of:
+
+$$LR = -2LL \left( X_{1}|M(\hat{\theta}_1) \right)-2LL \left(X_{2}|M(\hat{\theta}_2) \right) + 2LL \left(X|\hat{\theta}) \right)$$
+we estimate *loss of fit due to constraining only focus parameters* to identity across groups:
+
+$$ LR = -2LL \left( X_1 \mid M(\hat{\theta}_1) \right) -2LL \left( X_2 \mid M(\hat{\theta}_2) \right) -2LL \left( X_1 \mid M(\hat{\theta}'_1) \right) -2LL \left( X_2 \mid M(\hat{\theta}'_2) \right) $$
+
+
+<!-- 
+\left( X_{2} \mid M(\hat{\theta}_2) \right) 
+-2LL \left( X_{1} \mid M(\hat{\theta}'_1) \right) -2LL \left(X_{2}|M(\hat{\theta}'_2)) \right)
+-->
+
+with focus parameters constrained to be identical across groups for $\theta'_1$ and $\theta'_2$
+
+
+
+---
+# Focus parameters
+
+This is more expensive because we need to obtain maximum likelihood estimates for every possible split:
+$$argmin_{\theta'_1, \theta'_2}  -2LL \left( X_{1}|M(\theta'_1))-2LL(X_{2}|M(\theta'_2)) \right)$$
+subject to focus parameters being identical
+
+In total, we need one more iterative optimization process per each potential split point (with potentially more convergence issues)
+---
+
 ![:scale 90%](unsplash/matthew-henry-2Ts5HnA67k8-unsplash.jpg)
 
 ---
@@ -273,67 +315,108 @@ which is asymptotically $\chi^2$-distributed if $H_0$ is true (i.e., no group di
 ]
 ---
 
-# Focus parameters with LR tests
 
-For $\chi^2$-based tests, instead of:
-
-$$LR = -2LL \left( X_{1}|M(\hat{\theta}_1) \right)-2LL \left(X_{2}|M(\hat{\theta}_2) \right) + 2LL \left(X|\hat{\theta}) \right)$$
-we estimate *loss of fit due to constraining only focus parameters* to identity across groups:
-
-$$ LR = -2LL \left( X_1 \mid M(\hat{\theta}_1) \right) -2LL \left( X_2 \mid M(\hat{\theta}_2) \right) -2LL \left( X_1 \mid M(\hat{\theta}'_1) \right) -2LL \left( X_2 \mid M(\hat{\theta}'_2) \right) $$
-
-
-<!-- 
-\left( X_{2} \mid M(\hat{\theta}_2) \right) 
--2LL \left( X_{1} \mid M(\hat{\theta}'_1) \right) -2LL \left(X_{2}|M(\hat{\theta}'_2)) \right)
--->
-
-with focus parameters constrained to be identical across groups for $\theta'_1$ and $\theta'_2$
-
-
-
----
-# Focus parameters
-
-This is more expensive because we need to obtain maximum likelihood estimates for every possible split:
-$$argmax_{\theta'_1, \theta'_2}  -2LL \left( X_{1}|M(\theta'_1))-2LL(X_{2}|M(\theta'_2)) \right)$$
-
-In total, we need two more iterative optimization processes per each potential split point (with potentially more convergence issues)
----
 
 # Variable Importance
 
 .pull-left[
-- single trees are unstable
-- subsample data and predictors to create a forest with diverse predictor combinations
-- using a permutation approach, estimate contribution of each predictor to misfit `r Citep(bib,"brandmaier2016theory")`
+- Single trees are unstable
+- Subsample data and predictors to create a forest with diverse predictor combinations
+- Using a permutation approach, estimate contribution of each predictor to misfit `r Citep(bib,"brandmaier2016theory")`
 - ...but beware of marginal importance; `r Citep(bib,"strobl2008conditional")`
 
 ]
 
 .pull-right[
 .small[
-Example: Terminal decline of happiness from SOEP data
+Example: Terminal decline of happiness from SOEP data `r Citep(bib,"brandmaier2017terminal")`
 ]
-`r Citep(bib,"brandmaier2017terminal")`
-<img src="img/varimp-example-soep.png" style="width: 140%">
+
+<img src="img/varimp-example-soep.png" style="width: 120%">
 
 ]
 
 
 ---
 class: center middle
-# Some examples
+# A minimal example
 
 ---
 # Univariate predictions
 
-Let's simulate some Gaussian data and two dichotomous predictors `pred_mean` and `pred_var` that perfectly predict differences in either location or scale.  Also, we throw three uninformative predictors in the mix (binomial distributed):
+Let's simulate some Gaussian data and two dichotomous predictors `pred_mean` and `pred_var` that perfectly predict differences in either location (0 vs 1) or scale (1 vs 2).  Also, we throw three uninformative predictors in the mix (binomial distributed) and sample $1,000$ cases:
 
 <center>
 ![:scale 45%](img/04_simulated_four_univ.png)
+---
+# Run a tree
 
-Run a SEM forest based on a single indicator model with two parameters (mean and variance) and compute variable importance
+Specify model in `OpenMx` (or `lavaan`):
+```{r echo=TRUE, eval=FALSE}
+sem <- mxModel("Univariate Gaussian",
+  type="RAM",  manifestVars="y",
+               [...]
+  # variance
+  mxPath(from=manifests,arrows=2,free=TRUE,
+     values = c(1), labels=c("var_y")),
+# means
+   mxPath(from="one",to=manifests, arrows=1,free=TRUE,
+          values=c(0), labels=c("mean_y") )
+ 
+```  
+---
+# Run a tree
+
+Run the tree
+```{r echo=TRUE, eval=FALSE}
+sem <- mxModel("Univariate Gaussian",
+  type="RAM", manifestVars="y",
+               [...]
+  # variance
+  mxPath(from=manifests,arrows=2,free=TRUE,
+     values = c(1), labels=c("var_y")),
+# means
+   mxPath(from="one",to=manifests, arrows=1,free=TRUE,
+          values=c(0), labels=c("mean_y") )
+  
+tree <- semtree(sem, simulated_data, 
+   control=semtree_control(method="score"),
+{{  constraints=semtree.constraints(focus.parameters = "mean_y"))}}
+```  
+---
+# Tree with and w/o focus
+
+This seems to work...
+
+.pull-left[
+```{r}
+tree_nofocus_04 <- readRDS("data/04_univsim_semtree.rds")
+plot(tree_nofocus_04)
+```
+(No focus)
+]
+
+.pull-right[
+```{r}
+tree_focus_04 <- readRDS("data/04_univsim_semtree_f1.rds")
+plot(tree_focus_04)
+```
+(focus on _mean\_y_)
+]
+---
+# Run a forest
+
+Run a SEM forest based on a single indicator model with two parameters (mean and variance) again *with focus parameter* and compute variable importance
+```{r echo=TRUE, eval=FALSE}
+forest <- semforest(sem, simulated_data,     
+      control=semforest_score_control(num.trees=100),
+      constraints=semtree.constraints(focus.parameters = "mean_y")) 
+
+vim <- varimp(forest)
+
+```
+
+
 
 ---
 # (Marginal) Variable importance estimate
@@ -341,22 +424,16 @@ Run a SEM forest based on a single indicator model with two parameters (mean and
 vim_old<-readRDS("data/04_univsim_vim_semtree_f1old.rds")
 plot(vim_old)
 ```
-This is flawed because the influence of _pred\_var_ is overestimated.
+This is flawed because the influence of _pred\_var_ should be about zero.
 ---
 
 # Problem
 
-### Problem
-
-Variable importance estimates overestimate the importance of predictors, which predict differences in parameters outside the focus
-
-
-### Algorithm (for a given predictor $p$) to estimate _marginal importance_:
-
 With SEM forest, we grow trees with no stopping rule ($\alpha=1$)
  in order to explore deep conditional effects (~interactions) in the trees
 
-- For each tree, for every observation $x$ in the _OOB_, we compute the -2LL of observing $x$ given the leaf found before and after permuting predictor $p$
+Therefore, the permutation importance estimate will be influenced by differences with respect to all parameters of the model
+
 ---
 # Inspect first tree
 (Pruned) Tree from a forest without focus parameters
@@ -381,18 +458,18 @@ Solution: Estimate misfit incurred by only the focus parameters
 ---
 # Algorithm (estimate importance for focus parameters)
 
-Let the parameter estimates of a SEM $M$ be $\hat{\theta}_M$ with a partition into focus-parameters $\hat{\theta}_M^f$ and other parameters $\hat{\theta}_M^{0}$  
+Modified Importance Evaluation:
 
-Algorithm:
-
-- For each tree, for each observation $x$, find leaf model $M_1$ by traversing the tree and leaf model by traversing the tree after permuting predictor $M_2$
-- Get the estimates $\hat{\theta}_{M1}^f$ from $M_1$ and evaluate the likelihood of $x$ given $M_2$ using $\hat{\theta}^*= \left\{  \hat{\theta}_{M2}^0;  \hat{\theta}_{M1}^f \right\}$
-
+- For each tree, for each observation $x$, find leaf model $M_1$ by traversing the tree and leaf model $M_2$ by traversing the tree after permuting predictor in question
+- Compute -2LL of $x$ under $M_1$
+- Compute -2LL of $x$ under $M_2$ with focus parameters plugged in from $M_1$
+- Compute -2LL difference 
 ---
 
 # Back to the simulation
 
 Simulated Data:
+
 ![:scale 45%](img/04_simulated_four_univ.png)
 
 ---
@@ -404,34 +481,38 @@ Forest with (score-based) focus parameter on mean:
 ```{r ll}
 vim_new<-readRDS("data/04_univsim_vim_semtree_f1.rds")
 vim_old<-readRDS("data/04_univsim_vim_semtree_f1old.rds")
-plot(vim_old)
+plot(vim_old,xlim=c(0,200))
 ```
+(old scheme)
 ]
 
 .pull-right[
 ```{r lr}
-plot(vim_new)
+plot(vim_new, xlim=c(0,200))
 ```
+(new scheme)
 ]
 ---
 # To Focus or not to focus
 
-- Trees and forests yield identical results in `partykit` and `semtree` with focus parameter on mean 
+Trees yield identical results in `partykit` and `semtree` (with focus parameter on mean): 
 
 ```{r}
-tree_party <- readRDS("data/04_univsim_vim_partykit.rds")
+tree_party <- readRDS("data/04_univsim_tree_partykit.rds")
 tree_semtree <- readRDS("data/04_univsim_semtree_f1.rds")
 ```
 .pull-left[
 ```{r}
 plot(tree_party)
 ```
+made with ❤ by `partykit`
 ]
 
 .pull-right[
 ```{r}
 plot(tree_semtree)
 ```
+made with ❤ by `semtree`
 ]
 
 W/o focus: potentially interesting because differences in variances may also be of interest (e.g., meaningful individual differences or reliability differences)
@@ -529,7 +610,7 @@ class: inverse, center, middle
 - Measurement Invariance is usually based on multigrop SEM/CFA `r Citep(bib, "marsh2014exploratory")`
 --
 
-- SEM Trees were suggested as a tool for measurement invariance testing, that is, to explore differential item functioning `r Citep(bib, c("finch2017structural","sterner2023exploratory"))`
+- SEM Trees were suggested as a tool for measurement invariance testing, that is, to explore differential item functioning `r Citep(bib, c("finch2017structural","sterner2023exploratory"))`, that is to find moderators of factor loadings
 --
 
 - CFA partitioning can even be used without any groups at all `r Citep(bib, c("merkle2013tests"))`  
@@ -602,23 +683,11 @@ plot(vim)
 ]
 
 .pull-right[
-<center><img src="800px-Boruta.jpg" style="height:400px" /></center>
+<center><img src="img-downloaded/800px-Boruta.jpg" style="height:400px" /></center>
 
 A spirit or devil from slavic mythology, <small>image from Wikipedia/Public Domain</small>
 ]
----
-# Outlook I (cont'd)
-.small[
-- *Shadow Features Creation*: duplicates of the original features with their values shuffled
-- *SEM Forest Training*: SEM forest with both the original and shadow features. Evaluate importance metric.
-- *Importance Heuristic*: compare the importance of each original feature to the maximum importance of the shadow features.
-- *Decision Making*:
-  - Confirmed: Feature is consistently better than shadows; keep feature 
-  - Rejected: Features that consistently worse; remove feature
-  - Tentative: All others
-- *Repeat*
 
-]
 ---
 
 # Outlook II

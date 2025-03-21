@@ -28,6 +28,8 @@ simdata <- data.frame(y,
 
 tree_partykit <- partykit::ctree(y~., simdata)
 
+saveRDS(tree_partykit, file="data/04_univsim_tree_partykit.rds")
+
 library(ggplot2)
 
 ggplot(simdata, aes(x=y))+geom_histogram()+facet_wrap(~pred_mean+pred_var)
@@ -106,6 +108,7 @@ sf_f2 <- semforest(sem, simdata, control = semforest_score_control(num.trees=ntr
 vim_semtree_f2 <- semtree::varimp(sf_f2,method = "permutationFocus")
 toc()
 
+saveRDS( tree_semtree, file="data/04_univsim_semtree.rds" )
 saveRDS( tree_semtree_f1, file="data/04_univsim_semtree_f1.rds" )
 saveRDS( tree_semtree_f2, file="data/04_univsim_semtree_f2.rds" )
 #saveRDS( tree_semtree_f3, file="data/04_univsim_semtree_f3.rds" )
