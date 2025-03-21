@@ -3,7 +3,7 @@ title: "Focus! SEM Trees and Forests for Identifying Moderators in Structural Eq
 subtitle: "DAGStat 2025"  
 author: 
   - "Andreas M. Brandmaier"
-date: '`r Sys.Date()`'
+date: 'March 27, 2025'
 
 output:
   xaringan::moon_reader:
@@ -81,7 +81,7 @@ library(qrcode)
 ```
 class: center middle
 
-# Question: “Given a (theory-based) multivariate model, which predictors/covariates are relevant?
+# Question: “Given a (theory-based) multivariate model, which predictors/covariates/moderators are relevant?
 
 ---
 
@@ -102,25 +102,26 @@ knitr::include_graphics("img/SEM-measurement-structure.png")
 ```
 ---
 # SEM
-More formally, let $\mathbf{x}$ be a $p$-dimensional vector of observed variables, which is a function of $m$ latent variables:
+- More formally, we assume that we have $l$ variables of which $p$ are latent variables
 
-$$\mathbf{x} = \mathbf{\tau} + \mathbf{\Lambda\xi}+\mathbf{\epsilon} $$
-- $\mathbf{\tau}$ are the $p$ intercepts
-- $\mathbf{\Lambda}$ is the $p \times m$ factor loading matrix
-- $\mathbf{\xi}$ are the $m$ latent factor scores
+- In RAM notation, we define:
+  - a covariance matrix $\mathbf{S} \in \mathbb{R}^{l \times l}$ (“symmetric relations”), 
+  - a structural matrix $\mathbf{A} \in \mathbb{R}^{l \times l}$ (“asymmetric relations”), 
+  - and a filter matrix $\mathbf{F}\in \mathbb{R}^{p \times l}$ to filter out only observed variables
+
 ---
 # SEM
 
-With $\Phi$ being the covariance of the latent factors and $\Psi$ a covariance matrix of the residuals, we obtain a model-implied covariance matrix:
+Then, the model-implied covariance matrix becomes:
 
-$$\mathbf{ \Sigma = \Lambda \Phi \Lambda^T + \Psi }$$
-And (covariance) likelihood fit function (based on multivariate normal assumption):
+$$\mathbf{ \Sigma = F^T \left(I_l - A \right)^{-1} S \left( I_l - A \right) F }$$
+And (covariance) likelihood fit function (based on multivariate normal assumption) of observed covariance $S$:
 
 <!--
 $$-2LL = ln|\mathbf{\Sigma}|+tr\left(\mathbf{\Sigma^{-1} S} \right)-ln\left| \mathbf{S} \right| - \mathbf{p} $$
 -->
 $$-2LL = ln|\mathbf{\Sigma}|+tr\left(\mathbf{\Sigma^{-1} S} \right)-ln\left| \mathbf{S} \right| - \mathbf{p} $$
-(for multiple independent groups, the log-likelihoods sum up)
+(for multiple independent groups, the log-likelihoods sum up; means omitted here)
 
 ---
 class: center
@@ -129,7 +130,7 @@ class: center
 
 ![:scale 60%](img/onyx-lavaan-screenshot2.png)
 
-https://onyx-sem.com/ and [https://github.com/brandmaier/onyx](https://github.com/brandmaier/onyx)
+https://onyx-sem.com/ and [https://github.com/brandmaier/onyx](https://github.com/brandmaier/onyx) and for Julia fans: https://github.com/StructuralEquationModels/StructuralEquationModels.jl
 ---
 # Theory-driven modeling
 <img src="img/tg1.png">
@@ -332,7 +333,7 @@ Let's simulate some Gaussian data and two dichotomous predictors `pred_mean` and
 <center>
 ![:scale 45%](img/04_simulated_four_univ.png)
 
-Run a SEM forest based on a single indicator model with two parameters and compute variable importance
+Run a SEM forest based on a single indicator model with two parameters (mean and variance) and compute variable importance
 
 ---
 # (Marginal) Variable importance estimate
@@ -479,7 +480,10 @@ plot(j_tree)
 
 ---
 
-#
+# SEM Tree with focus paramater
+
+Focus parameter on regression coefficient:
+
 ```{r}
 tree<-readRDS("data/02_tree_foc.rds")
 plot(tree)
@@ -560,7 +564,7 @@ As an example:
 # BFI
 
 - Specify a CFA of five indicators for the construct _extraversion_: "don't talk a lot", "find it difficult to approach others", "Know how to captivate propl", "Make friends easily", "Take charge"
-- anchor item: "don't talk a lot"
+- Anchor item: "don't talk a lot"
 - choose only factor loadings and residuals as focus parameters (but not intercepts or latent mean/variance)
 - Predictors: age, sex, and education
 ---
@@ -574,11 +578,15 @@ plot(prune(tree,3))
 ![:scale 80%](img/06bfi-tree-loadings.png)
 
 .small[
-(f3: Know how to captivate people and f5: Take charge)
+(f3: Know how to captivate people and f5: Take charge - professional skills vs personality?)
 ]
 ---
 # BFI Forest
 Permutation variable importance with focus parameters loadings:
+
+```{r eval=FALSE, echo=TRUE}
+vim <- varimp(frst, method="permutationFocus")
+```
 
 ```{r}
 vim <- readRDS("data/06_bfi_vim.rds")
@@ -588,15 +596,34 @@ plot(vim)
 
 # Outlook I
 
-- BORUTA (with Priyanka Paul & Timothy Brick, PennState)
+.pull-left[
+- Adapte BORUTA `r  Citep(bib, "boruta")` to SEM Tree (with Priyanka Paul & Timothy Brick, PennState)
 - BORUTA is a heuristic to determine a cut-off between important and not-important variables 
-- Based on shadow features 
+]
 
+.pull-right[
+<center><img src="800px-Boruta.jpg" style="height:400px" /></center>
+
+A spirit or devil from slavic mythology, <small>image from Wikipedia/Public Domain</small>
+]
+---
+# Outlook I (cont'd)
+.small[
+- *Shadow Features Creation*: duplicates of the original features with their values shuffled
+- *SEM Forest Training*: SEM forest with both the original and shadow features. Evaluate importance metric.
+- *Importance Heuristic*: compare the importance of each original feature to the maximum importance of the shadow features.
+- *Decision Making*:
+  - Confirmed: Feature is consistently better than shadows; keep feature 
+  - Rejected: Features that consistently worse; remove feature
+  - Tentative: All others
+- *Repeat*
+
+]
 ---
 
 # Outlook II
 
-Ordinal models using threshold models (example: mammography screening experience and opinions from `r Citep(bib, "hothorn2006unbiased")`)
+(Joint) Ordinal models using threshold models (example: mammography screening experience and opinions from `r Citep(bib, "hothorn2006unbiased")`)
 
 .pull-left[
 ```{r}
@@ -619,7 +646,10 @@ plot(ptree)
 
 - SEM Trees and Forests are a form of model-based recursive partitioning
 - They can be implemented either via the `semtree` package or via `partykit` (https://www.zeileis.org/news/lavaantree/)
+- For specialized models, `mob/partykit` is much more efficient
 - Focus parameters may be important when exploring the importance of predictors for subsets of parameters (e.g., individual differences vs means, or intercept vs slopes in growth models)
+- If you have a theory, test the theory first, then explore!
+`
 
 ---
 # Thank You
