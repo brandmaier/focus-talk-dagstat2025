@@ -698,7 +698,7 @@ A spirit or devil from slavic mythology, <small>image from Wikipedia/Public Doma
 
 # Outlook II
 
-(Joint) Ordinal models using threshold models (example: mammography screening experience and opinions from `r Citep(bib, "hothorn2006unbiased")`)
+(Joint) Ordinal models using threshold models (example: mammography screening experience and opinions from `r Citep(bib, "hothorn2006unbiased")` with $n=412$)
 
 .pull-left[
 ```{r}
@@ -708,7 +708,7 @@ plot(ptree)
 ```
 
 .small[
-- SYMPT: You do not need a mamogram unless you develop symptoms (4 point Likert)
+- SYMPT: You do not need a mamogram unless you develop symptoms
 - PB: Perceived benefit (low value = strong benefit)
 ]
 ]
@@ -841,6 +841,12 @@ PrintBibliography(bib, start=1, end=6)
 ---
 .small[
 ```{r, results='asis', echo=FALSE}
-PrintBibliography(bib, start=7)
+PrintBibliography(bib, start=7, end=7+5)
+```
+]
+---
+.small[
+```{r, results='asis', echo=FALSE}
+PrintBibliography(bib, start=13)
 ```
 ]

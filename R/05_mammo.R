@@ -1,7 +1,8 @@
 library(tidyverse)
 library(ggplot2)
+library(party)
 data("mammoexp", package = "TH.data")
-mtree <- ctree(ME ~ ., data = mammoexp,control = ctree_control(alpha=0.05))
+mtree <- partykit::ctree(ME ~ ., data = mammoexp)
 
 plot(mtree)
 
