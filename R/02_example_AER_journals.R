@@ -57,6 +57,10 @@ tree.unc <- semtree(model=model, data= Journals, control =control)
 tree.foc <- semtree(model=model, data= Journals, 
                     control=control,constraints=list(focus.parameters="b1"))
 
+tree.foc_2coef <- semtree(model=model, data= Journals, 
+                    control=control,constraints=list(focus.parameters=c("b0","b1")))
+
+
 plot(prune(tree.foc,1))
 
 plot(tree.unc)
@@ -64,7 +68,7 @@ plot(tree.foc)
 
 saveRDS(tree.unc, file = "data/02_tree_unc.rds")
 saveRDS(tree.foc, file = "data/02_tree_foc.rds")
-
+saveRDS(tree.foc_2coef, file = "data/02_tree_foc_2coef.rds")
 
 
 #data("Journals", package = "AER")

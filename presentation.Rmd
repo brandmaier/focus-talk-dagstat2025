@@ -88,6 +88,7 @@ class: center middle
 
 class: inverse center middle
 
+
 # SEM + Decision Trees + Focus Parameters + Random Forests + Variable Importance
 
 
@@ -115,7 +116,7 @@ knitr::include_graphics("img/SEM-measurement-structure.png")
 
 Then, the model-implied covariance matrix becomes:
 
-$$\mathbf{ \Sigma = F^T \left(I_l - A \right)^{-1} S \left( I_l - A \right) F }$$
+$$\mathbf{ \Sigma = F \left(I_l - A \right)^{-1} S \left( I_l - A \right)^{-T} F^T }$$
 And (covariance) likelihood fit function (based on multivariate normal assumption) of observed covariance $S$:
 
 <!--
@@ -285,6 +286,7 @@ subject to focus parameters being identical
 In total, we need one more iterative optimization process per each potential split point (with potentially more convergence issues)
 ---
 
+<center>
 ![:scale 90%](unsplash/matthew-henry-2Ts5HnA67k8-unsplash.jpg)
 
 ---
@@ -311,6 +313,7 @@ In total, we need one more iterative optimization process per each potential spl
 - Backbone of MOB in `party/partykit` and were also brought to SEM trees by `r Citep(bib,"arnold2021score")`
 - Under H0 (no informative split), the cumulative score process is a Brownian bridge
 - Various statistics available (e.g. maximum Lagrange multiplier $maxLM$; double maximum for illustration on the left)
+- By computing them on subsets of parameters, we get _focus parameters_ for free
 ]
 ]
 ---
@@ -429,24 +432,26 @@ This is flawed because the influence of _pred\_var_ should be about zero.
 
 # Problem
 
-With SEM forest, we grow trees with no stopping rule ($\alpha=1$)
- in order to explore deep conditional effects (~interactions) in the trees
+With SEM forest, we grow trees with
 
-Therefore, the permutation importance estimate will be influenced by differences with respect to all parameters of the model
+- subsampling of predictors (`mtry=2` or $\sqrt{m}$ or ..)
+- no stopping rule ($\alpha=1$) in order to explore deep conditional effects (~interactions) in the trees
+
+Therefore, the permutation importance estimate will be influenced by differences with respect to all parameters of the model because all predictors will appear in the forest
 
 ---
 # Inspect first tree
-(Pruned) Tree from a forest without focus parameters
+(Pruned) Tree from a forest with focus parameters
 ```{r}
-forest <- readRDS("data/04_sf.rds")
+forest <- readRDS("data/04_sf_f1.rds")
 
-plot(semtree::prune(forest$forest[[2]],1))
+plot(semtree::prune(forest$forest[[2]],2))
 ```
 ---
 # Inspect second tree
-Another (pruned) Tree from a forest without focus parameters
+Another (pruned) Tree from a forest with focus parameters
 ```{r}
-plot(prune(forest$forest[[4]],2))
+plot(prune(forest$forest[[11]],2))
 ```
 ---
 # Problem
@@ -462,7 +467,8 @@ Modified Importance Evaluation:
 
 - For each tree, for each observation $x$, find leaf model $M_1$ by traversing the tree and leaf model $M_2$ by traversing the tree after permuting predictor in question
 - Compute -2LL of $x$ under $M_1$
-- Compute -2LL of $x$ under $M_2$ with focus parameters plugged in from $M_1$
+- <s>Compute -2LL of $x$ under $M_2$</s>
+- Compute -2LL of $x$ under $M_1$ with only focus parameters plugged in from $M_2$
 - Compute -2LL difference 
 ---
 
@@ -563,10 +569,10 @@ plot(j_tree)
 
 # SEM Tree with focus paramater
 
-Focus parameter on regression coefficient:
+Focus parameter on regression coefficient and constant:
 
-```{r}
-tree<-readRDS("data/02_tree_foc.rds")
+```{r out.height="80%"}
+tree<-readRDS("data/02_tree_foc_2coef.rds")
 plot(tree)
 ```
 Identical result: somewhat shallower slope for older journals
@@ -715,12 +721,12 @@ plot(ptree)
 
 - SEM Trees and Forests are a form of model-based recursive partitioning
 - They can be implemented either via the `semtree` package or via `partykit` (https://www.zeileis.org/news/lavaantree/)
-- For specialized models, `mob/partykit` is much more efficient
+- Offer a way to explore theory-driven SEM with variable importance and partial dependence plots
 - Focus parameters may be important when exploring the importance of predictors for subsets of parameters (e.g., individual differences vs means, or intercept vs slopes in growth models)
 - If you have a theory, test the theory first, then explore!
-`
 
 ---
+
 # Thank You
 
 - Slides: https://github.com/brandmaier/focus-talk-dagstat2025

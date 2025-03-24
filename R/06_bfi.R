@@ -131,3 +131,10 @@ saveRDS(object=vim, file="data/06_bfi_vim.rds")
 #semtree::boruta(model=run2, 
 #                data=bfisub,
 #                control = semforest_score_control(num.trees=100))
+
+frst <- readRDS("data/06_forest.rds")
+pdp_f2 <- semtree::partialDependence(frst, data=bfisub,reference.var = "age")
+
+plot(pdp_f2, parameter="f3")+geom_line(lwd=2)+xlim(c(20,60))
+
+#ggsave(pdp_f2)
