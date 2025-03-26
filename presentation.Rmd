@@ -697,10 +697,6 @@ plot(prune(tree,3))
 # BFI Forest
 Permutation variable importance with focus parameters loadings:
 
-```{r eval=FALSE, echo=TRUE}
-vim <- varimp(frst, method="permutationFocus")
-```
-
 ```{r}
 vim <- readRDS("data/06_bfi_vim.rds")
 plot(vim)
@@ -710,7 +706,7 @@ plot(vim)
 # Outlook I
 
 .pull-left[
-- Adapte BORUTA `r  Citep(bib, "boruta")` to SEM Tree (with Priyanka Paul & Timothy Brick, PennState)
+- Adapt BORUTA `r  Citep(bib, "boruta")` to SEM Tree (with Priyanka Paul & Timothy Brick, PennState)
 - BORUTA is a heuristic to determine a cut-off between important and not-important variables 
 ]
 
@@ -802,16 +798,6 @@ Many good reasons like:
 
 ---
 
-## Forensics
-
-If an analysis is repeated later in time and results do not align with what was published, it could be due to:
-
-- changes in the core functions of dependent packages (e.g., bugfixes)
-- changes in defaults of dependent packages (e.g., default test statistic for splits, default stopping criteria, default bucket size)
-- changes in the data used (e.g., preprocessing, outlier removal)
-- changes in the R script used (e.g., multiple versions were created during development and it's unclear, which one was used ultimately)
-
----
 
 # Sources of Failure to Reproduce Results
 
@@ -844,7 +830,7 @@ knitr::include_graphics("img/nutshell.png")
 
 ]
 
-.footnote[from Peikert and Brandmaier (2020)]
+.footnote[from Peikert and Brandmaier (2020) and `repro` package]
 ---
 class: center, middle
 
