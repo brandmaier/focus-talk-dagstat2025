@@ -126,14 +126,6 @@ $$-2LL = ln|\mathbf{\Sigma}|+tr\left(\mathbf{\Sigma^{-1} S} \right)-ln\left| \ma
 (for multiple independent groups, the log-likelihoods sum up; means omitted here)
 
 ---
-class: center
-# <s>Commercial</s> Break: Ωnyx
-
-
-![:scale 60%](img/onyx-lavaan-screenshot2.png)
-
-https://onyx-sem.com/ and [https://github.com/brandmaier/onyx](https://github.com/brandmaier/onyx) and for Julia fans: https://github.com/StructuralEquationModels/StructuralEquationModels.jl
----
 # Theory-driven modeling
 <img src="img/tg1.png">
 
@@ -255,6 +247,7 @@ which is asymptotically $\chi^2$-distributed if $H_0$ is true (i.e., no group di
   - all possible dichotomizations for nominal variables (exponential costs)
 - Continue splitting if difference is significant
 
+Effects of interest can be in any subset of model parameters
 ---
 
 # Focus parameters with LR tests
@@ -407,6 +400,32 @@ plot(tree_focus_04)
 (focus on _mean\_y_)
 ]
 ---
+# To Focus or not to focus
+
+*By the way*: Trees yield identical results in `partykit` and `semtree` (with focus parameter on mean): 
+
+```{r}
+tree_party <- readRDS("data/04_univsim_tree_partykit.rds")
+tree_semtree <- readRDS("data/04_univsim_semtree_f1.rds")
+```
+.pull-left[
+```{r}
+plot(tree_party)
+```
+made with ❤ by `partykit`
+]
+
+.pull-right[
+```{r}
+plot(tree_semtree)
+```
+made with ❤ by `semtree`
+]
+
+W/o focus: potentially interesting because differences in variances may also be of interest (e.g., meaningful individual differences or reliability differences)
+
+
+---
 # Run a forest
 
 Run a SEM forest based on a single indicator model with two parameters (mean and variance) again *with focus parameter* and compute variable importance
@@ -463,7 +482,7 @@ Solution: Estimate misfit incurred by only the focus parameters
 ---
 # Algorithm (estimate importance for focus parameters)
 
-Modified Importance Evaluation:
+Heuristic (😇) Importance Evaluation:
 
 - For each tree, for each observation $x$, find leaf model $M_1$ by traversing the tree and leaf model $M_2$ by traversing the tree after permuting predictor in question
 - Compute -2LL of $x$ under $M_1$
@@ -499,33 +518,40 @@ plot(vim_new, xlim=c(0,200))
 (new scheme)
 ]
 ---
-# To Focus or not to focus
 
-Trees yield identical results in `partykit` and `semtree` (with focus parameter on mean): 
+class: inverse, center, middle
+# Some more examples
 
-```{r}
-tree_party <- readRDS("data/04_univsim_tree_partykit.rds")
-tree_semtree <- readRDS("data/04_univsim_semtree_f1.rds")
-```
+---
+
+# Back to Latent Growth Curve Models
+
 .pull-left[
-```{r}
-plot(tree_party)
-```
-made with ❤ by `partykit`
+![](img/lgcm_simu_4.png)
+
+.small[
+Differences in intercept variance (2,5; cols) or slope variance (2;5, rows), $n=200$ per group
+]
 ]
 
 .pull-right[
-```{r}
-plot(tree_semtree)
-```
-made with ❤ by `semtree`
+![](img/lgcm-model.png)
 ]
-
-W/o focus: potentially interesting because differences in variances may also be of interest (e.g., meaningful individual differences or reliability differences)
-
 ---
-class: inverse, center, middle
-# Some more examples
+# Back to Latent Growth Curve Models
+
+```{r}
+
+err<-readRDS("data/08_lgcm_vim_err.rds")
+icept<-readRDS("data/08_lgcm_vim_icept.rds")
+slope<-readRDS("data/08_lgcm_vim_slope.rds")
+
+par(mfrow=c(1,3),mar=c(0.5,0.5,0.5,0.5))
+plot(icept,xlim=c(0,50), main="Icept")
+plot(err,xlim=c(0,50), main="Residual")
+plot(slope, xlim=c(0,50), main="Slope")
+
+```
 
 ---
 
