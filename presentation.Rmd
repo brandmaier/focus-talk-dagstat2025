@@ -286,7 +286,7 @@ In total, we need one more iterative optimization process per each potential spl
 # Score-based Tests
 
 .pull-left[
-- Likelihood ratio tests are computationally expensive, we get convergence problems, naive LR test suffer from multiple testing issues and variable selection bias like CART  `r Citep(bib, c("strobl2007bias"))` 
+- Likelihood ratio tests are computationally expensive, we get convergence problems, naive LR test suffer from variable selection bias like CART  `r Citep(bib, c("strobl2007bias"))` 
 - Let's use score tests (proposed for general model-based partitioning by `r Citet(bib, c("zeileis2008model"))` 
 ]
 
@@ -749,6 +749,14 @@ plot(ptree)
 
 ---
 
+class: center
+# <s>Commercial</s> Break: Ωnyx
+ 
+ 
+![:scale 60%](img/onyx-lavaan-screenshot2.png)
+ 
+https://onyx-sem.com/ and [https://github.com/brandmaier/onyx](https://github.com/brandmaier/onyx) and for Julia fans: https://github.com/StructuralEquationModels/StructuralEquationModels.jl
+---
 # Thank You
 
 - Slides: https://github.com/brandmaier/focus-talk-dagstat2025
